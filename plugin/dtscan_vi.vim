@@ -4,4 +4,10 @@
 "	vim: set foldlevel=2 foldcolumn=3: 
 "	}}}1
 
+let s:self_name="mld_vim_dtscan_vi"
+let s:self_printdebug=0
+
+let s:path_bin_python = ""
+let s:cmd_dtscan = "dtscan"
+
 
