@@ -1,4 +1,4 @@
-"	VIM SETTINGS: {{{3
+"c	VIM SETTINGS: {{{3
 "	VIM: let g:mldvp_filecmd_open_tagbar=0 g:mldvp_filecmd_NavHeadings="" g:mldvp_filecmd_NavSubHeadings="" g:mldvp_filecmd_NavDTS=0 g:mldvp_filecmd_vimgpgSave_gotoRecent=0
 "	vim: set tabstop=4 modeline modelines=10 foldmethod=marker:
 "	vim: set foldlevel=2 foldcolumn=3: 
@@ -14,6 +14,9 @@ let s:cmd_dtscan = "dtscan"
 
 let s:matches_index_datetime = 0
 let s:matches_index_linenum = 3
+
+"	TODO: 2021-02-07T01:20:30AEDT save matches list, and use it until the buffer is modified again -> and how to detect such
+"	TODO: 2021-02-07T01:21:19AEDT dtscan_vi, F9 navigation cmd, include (as much as can fig) text from lines where datetimes are located
 
 function! g:DTScan_GetMatchesList()
 	let path_tempfile = "/tmp/dtscan_vi.temp"
@@ -62,27 +65,29 @@ function! g:DTScan_CurrentLine_Index(arg_getmatches_list)
 	return -1 
 endfunction
 
-function! g:DTScan_Goto_Newest(arg_getmatches_list)
+"function! g:DTScan_Goto_Newest(arg_getmatches_list)
+function! g:DTScan_Goto_Oldest()
+	let arg_getmatches_list = g:DTScan_GetMatchesList()
 
-	let linenum_selected = split(a:arg_getmatches_list[0], "\t")[s:matches_index_linenum]
+	let linenum_selected = split(arg_getmatches_list[0], "\t")[s:matches_index_linenum]
 	echo "\nGo to line: " . linenum_selected
 	exe linenum_selected
 	exe "normal zz"
 	exe "normal zv"
-
 endfunction
-function! g:DTScan_Goto_Oldest(arg_getmatches_list)
 
-	let linenum_selected = split(a:arg_getmatches_list[-1], "\t")[s:matches_index_linenum]
+"function! g:DTScan_Goto_Oldest(arg_getmatches_list)
+function! g:DTScan_Goto_Newest()
+	let arg_getmatches_list = g:DTScan_GetMatchesList()
+
+	let linenum_selected = split(arg_getmatches_list[-1], "\t")[s:matches_index_linenum]
 	echo "\nGo to line: " . linenum_selected
 	exe linenum_selected
 	exe "normal zz"
 	exe "normal zv"
-
 endfunction
 
 function! g:DTScan_Goto_Previous()
-
 	let linenum = getline('.')
 	let result_getmatchs_list = g:DTScan_GetMatchesList()
 	if len(result_getmatchs_list) == 0
@@ -90,28 +95,29 @@ function! g:DTScan_Goto_Previous()
 	endif
 	let linenum_index = g:DTScan_CurrentLine_Index(result_getmatchs_list)
 	if (linenum_index == -1)
-		call g:DTScan_Goto_Newest(result_getmatchs_list)
+		"call g:DTScan_Goto_Newest(result_getmatchs_list)
+		let linenum_selected = split(result_getmatchs_list[-1], "\t")[s:matches_index_linenum]
+		echo "\nGo to line: " . linenum_selected
+		exe linenum_selected
+		exe "normal zz"
+		exe "normal zv"
 		return
 	endif
 	if (linenum_index <= 0)
 		echo "At oldest"
 		return
 	endif
-
 	"echo printf("linenum_index=(%s)", linenum_index)
 	let linenum_index -= 1
 	"echo printf("linenum_index=(%s)", linenum_index)
-
 	let linenum_selected = split(result_getmatchs_list[linenum_index], "\t")[s:matches_index_linenum]
 	echo "\nGo to line: " . linenum_selected
 	exe linenum_selected
 	exe "normal zz"
 	exe "normal zv"
-
 endfunction
 
 function! g:DTScan_Goto_Next()
-
 	let linenum = getline('.')
 	let result_getmatchs_list = g:DTScan_GetMatchesList()
 	if len(result_getmatchs_list) == 0
@@ -119,7 +125,14 @@ function! g:DTScan_Goto_Next()
 	endif
 	let linenum_index = g:DTScan_CurrentLine_Index(result_getmatchs_list)
 	if (linenum_index == -1)
-		call g:DTScan_Goto_Oldest(result_getmatchs_list)
+"		call g:DTScan_Goto_Oldest(result_getmatchs_list)
+
+	let linenum_selected = split(a:result_getmatchs_list[0], "\t")[s:matches_index_linenum]
+	echo "\nGo to line: " . linenum_selected
+	exe linenum_selected
+	exe "normal zz"
+	exe "normal zv"
+
 		return
 	endif
 	if (linenum_index >= len(result_getmatchs_list)-1)
@@ -136,10 +149,10 @@ function! g:DTScan_Goto_Next()
 	exe linenum_selected
 	exe "normal zz"
 	exe "normal zv"
-
 endfunction
 
-nnoremap <F10> :call g:DTScan_Navigate() <CR>
-nnoremap <F11> :call g:DTScan_Goto_Previous() <CR>
-nnoremap <F12> :call g:DTScan_Goto_Next() <CR>
+nnoremap <F9> :call g:DTScan_Navigate()<CR>
+nnoremap <F10> :silent call g:DTScan_Goto_Previous()<CR>
+nnoremap <F11> :silent call g:DTScan_Goto_Next()<CR>
+nnoremap <F12> :silent call g:DTScan_Goto_Newest()<CR>
 
