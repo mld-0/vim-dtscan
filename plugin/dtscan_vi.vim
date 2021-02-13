@@ -32,6 +32,7 @@ function! g:DTScan_GetMatchesList()
 endfunction
 "	}}}
 
+
 "	Ongoing: 2021-02-09T06:48:33AEDT if showing preview of line, is datetime text also necessary?
 function! g:DTScan_Navigate() 
 "	{{{
@@ -46,7 +47,7 @@ function! g:DTScan_Navigate()
 		let loop_line_num = str2nr(loop_match_items[s:matches_index_linenum])
 
 		let loop_linetext = trim(getline(loop_line_num))
-		let width_linetext = winwidth(0) - (38 + 4 + 12)
+		let width_linetext = winwidth(0) - (20)
 
 		let loop_linepreview = ""
 		if (width_linetext > 0)
@@ -184,9 +185,9 @@ function! g:DTScan_Goto_Next()
 endfunction
 "	}}}
 
-nnoremap <F9> :call g:DTScan_Navigate()<CR>
+nnoremap <F9> :silent call g:DTScan_Goto_Newest()<CR>
 nnoremap <F10> :silent call g:DTScan_Goto_Previous()<CR>
 nnoremap <F11> :silent call g:DTScan_Goto_Next()<CR>
-nnoremap <F12> :silent call g:DTScan_Goto_Newest()<CR>
+nnoremap <F12> :call g:DTScan_Navigate()<CR>
 
 "	}}}1
