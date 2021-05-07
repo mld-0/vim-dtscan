@@ -6,7 +6,6 @@
 "	{{{2
 
 let s:self_name="mld_vim_dtscan_vi"
-let s:self_printdebug=0
 
 let s:path_bin_python = ""
 let s:cmd_dtscan = "dtscan"
@@ -198,7 +197,6 @@ nnoremap <F12> :call g:DTScan_Navigate()<CR>
 "	Also also it's a f------ mess -> what can be cleaned up?
 "	{{{2
 
-
 let s:dtscan_flag_dts_elapsed_copyResult = 1
 
 "	Python use for converting strings to datetimes -> must provide 'dateparser'
@@ -206,50 +204,7 @@ let s:dtscan_datetime2epoch_python_bin = "python3"
 
 let s:dtscan_dts_search_regex_list = [ '\<\([0-9]\{4}\)-\([0-9]\{2}\)-\([0-9]\{2}\)[T|-| ]\?\([0-9]\{2}\):\([0-9]\{2}\):\([0-9]\{2}\)\([\.|,][0-9]*\)\?\([A-Z]\+\|[+-][0-9]*[:]\?[0-9]*\)\?\>', '\(([0-9]\{4}-[0-9]\{2}-[0-9]\{2})-([0-9]\{4}-[0-9]\{2})\)' ]
 
-function! g:DTScan_DateTime2Epoch(dts_str)
-"	{{{
-"	About: Recently updated, so ... what got broken? Previously a wrapper for the (what were you thinking) DTScan_macos_only_DateTime2UnixTime(a:dts_str) (I mean, just look at it). 
-"	Update: 2021-05-06T22:20:16AEST Copied from Mldvp, Replace s/Mldvp_/DTScan_/ and s/mldvp_/dtscan_/
-"	Created: (2020-05-06)-(2301-45)
-	"	return DTScan_macos_only_DateTime2UnixTime(a:dts_str) 
-	let dts_str = a:dts_str
-
-	"if (len(s:dtscan_qpath_dts2unixtime) == 0)
-	"	let s:dtscan_qpath_dts2unixtime = g:DTScan_Index_Varname2Path(s:dtscan_qvar_dts2unixtime)
-	"	"trim(system("source " . s:qindex_expect. "; echo " . 
-	"endif
-	"let result = system(s:dtscan_index_shell . s:dtscan_qpath_dts2unixtime . " '" . dts_str . "'")
-	"let result = trim(result)
-
-	let cmd_parse = s:dtscan_datetime2epoch_python_bin . ' -c ' . "'" . 'import dateparser; result = dateparser.parse("' . dts_str . '"); print(result.strftime("%s"));' . "'"
-	let result = system(cmd_parse)
-
-	return result
-endfunction
-"	}}}
-
-function! g:DTScan_CallerFuncName()
-"	{{{
-"	About: Return the name of the callee function
-"	Update: 2021-05-06T22:20:58AEST Copied from Mldvp, Replace s/Mldvp_/DTScan_/ and s/mldvp_/dtscan_/
-"	Bugfix: (2020-09-27)-(1951-55) Remove recursive call
-"	Created: (2020-05-11)-(1809-38)
-	let func_name = "DTScan_CallerFuncName"
-	let func_printdebug = 0
-
-	let result = substitute(expand('<sfile>'), '.*\(\.\.\|\s\)', '', '')
-	let result = substitute(result, '\S*\.\.\(\S*\)', '\1', '')
-
-	if (func_printdebug == 1)
-		let message_str = printf("result=(%s)\n", result)
-		echo message_str
-	endif
-
-	return result
-endfunction
-"	}}}
-
-let s:dtscan_curloc_printdebug = 0
+let s:dtscan_curloc_printdebug = 1
 
 let s:dtscan_curloc_call = 1
 let s:dtscan_curloc_unfoldall_on_save = 0
@@ -265,6 +220,54 @@ let s:dtscan_curloc_formatoptions = ""
 
 let s:dtscan_wpm_copy_results_byDefault = 1
 let s:dtscan_dts_getlist_bylinenums_sortOutputByDefault = 0
+
+function! s:LogError(message, ...)
+"	{{{
+"	Function: s:LogError(message, ...)
+"	About: <...> 
+	let use_multiline = get(a:, 1, s:mldvp_use_multiline_logging_by_default)
+	"let callee = substitute(expand('<sfile>'), '.*\(\.\.\|\s\)', '', '')
+	let callee = expand('<sfile>')
+	let log_message = s:WriteToDebugFile(1, a:message, callee, use_multiline)
+	if (s:mldvp_error_echo == 1)
+		echo log_message
+	endif
+	if (s:mldvp_error_echoerr == 1)
+		echoerr log_message	
+	endif
+endfunction
+"	}}}
+
+function! g:DTScan_DateTime2Epoch(dts_str)
+"	{{{
+"	About: Using python (given by s:dtscan_datetime2epoch_python_bin) and module 'dateparser', convert datetime string to epoch
+	let dts_str = a:dts_str
+	let cmd_parse = s:dtscan_datetime2epoch_python_bin . ' -c ' . "'" . 'import dateparser; result = dateparser.parse("' . dts_str . '"); print(result.strftime("%s"));' . "'"
+	let result = system(cmd_parse)
+	return result
+endfunction
+"	}}}
+
+function! g:DTScan_CallerFuncName()
+"	{{{
+"	About: Return the name of the callee function
+"	Update: 2021-05-06T22:20:58AEST Copied from Mldvp, Replace s/Mldvp_/DTScan_/ and s/mldvp_/dtscan_/
+"	Bugfix: (2020-09-27)-(1951-55) Remove recursive call
+"	Created: (2020-05-11)-(1809-38)
+	let func_name = "DTScan_CallerFuncName"
+	let func_printdebug = s:dtscan_curloc_printdebug 
+
+	let result = substitute(expand('<sfile>'), '.*\(\.\.\|\s\)', '', '')
+	let result = substitute(result, '\S*\.\.\(\S*\)', '\1', '')
+
+	if (func_printdebug == 1)
+		let message_str = printf("result=(%s)\n", result)
+		echo message_str
+	endif
+
+	return result
+endfunction
+"	}}}
 
 function! g:DTScan_CurLoc_Save(...)
 "	{{{
@@ -460,28 +463,29 @@ function! g:DTScan_WordCount_ByLineNums(...)
 "	Update: 2021-05-06T22:22:10AEST Copied from Mldvp, Replace s/Mldvp_/DTScan_/ and s/mldvp_/dtscan_/
 "		Created: (2019-11-18)-(1229-48)
 	"let ln_start = a:ln_start
+	let func_name = g:DTScan_CallerFuncName()
 	let cur_line = line('.')
 	let ln_start = get(a:, 1, cur_line)
 	let ln_end = get(a:, 2, ln_start)
-	let func_printdebug = 0
+	let func_printdebug = s:dtscan_curloc_printdebug 
 	"	Quit (with message) if the user has entered invalid line numbers.
 	let quit_invalid_flag = 0
 	let buffer_linenums = line("$")
 	let range_str = "[" . string(ln_start) . ", " . string(ln_end) . "]"
 	if (ln_start > ln_end)
-		let message_str="[DTScan_WordCount_ByLineNums], ln_start > ln_end, range: " . range_str
+		let message_str = func_name . " ln_start > ln_end, range: " . range_str
 		echo message_str
 		call s:LogError(message_str)
 		let quit_invalid_flag = 1
 	endif
 	if (ln_start < 0)
-		let message_str="[DTScan_WordCount_ByLineNums], ln_start < 0, range: " . range_str
+		let message_str = func_name . " ln_start < 0, range: " . range_str
 		echo message_str
 		call s:LogError(message_str)
 		let quit_invalid_flag = 1
 	endif
 	if (ln_end > buffer_linenums)
-		let message_str = "[DTScan_WordCount_ByLineNums], ln_end > buffer_linenums, range: " . range_str
+		let message_str = func_name . " ln_end > buffer_linenums, range: " . range_str
 		echo message_str
 		call s:LogError(message_str)
 		let quit_invalid_flag = 1
@@ -528,7 +532,7 @@ endfunction
 function! g:DTScan_DTS_GetList_ByLineNums(ln_start, ...)
 "	{{{
 	let func_name = g:DTScan_CallerFuncName()
-	let func_printdebug = 1
+	let func_printdebug = s:dtscan_curloc_printdebug 
 
 	let ln_start = a:ln_start
 	let ln_end = get(a:, 1, ln_start)
@@ -634,7 +638,7 @@ function! g:DTScan_DTS_Elapsed_ByLineNums(...)
 "	Status: (2020-01-15)-(1532-46) Functional, untested/unpolished.
 "	Created: (2019-11-18)-(1234-11)
 	let func_name = g:DTScan_CallerFuncName()
-	let func_printdebug = 1
+	let func_printdebug = s:dtscan_curloc_printdebug 
 	let ln_start = get(a:, 1, line('.'))
 	let ln_end = get(a:, 2, ln_start)
 	let dts_list = DTScan_DTS_GetList_ByLineNums(ln_start, ln_end)
@@ -737,7 +741,7 @@ function! g:DTScan_WPM_ByLineNums(...)
 	let curloc_list = g:DTScan_CurLoc_Save()
 	let sln = get(a:, 1, cur_line)
 	let eln = get(a:, 2, sln)
-	let func_printdebug = 0
+	let func_printdebug = s:dtscan_curloc_printdebug 
 	let func_name = g:DTScan_CallerFuncName()
 	let wordcount = g:DTScan_WordCount_ByLineNums(sln, eln)
 	let elapsed = g:DTScan_DTS_Elapsed_ByLineNums(sln, eln)
