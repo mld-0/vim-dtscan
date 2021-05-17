@@ -204,7 +204,7 @@ let s:dtscan_datetime2epoch_python_bin = "python3"
 
 let s:dtscan_dts_search_regex_list = [ '\<\([0-9]\{4}\)-\([0-9]\{2}\)-\([0-9]\{2}\)[T|-| ]\?\([0-9]\{2}\):\([0-9]\{2}\):\([0-9]\{2}\)\([\.|,][0-9]*\)\?\([A-Z]\+\|[+-][0-9]*[:]\?[0-9]*\)\?\>', '\(([0-9]\{4}-[0-9]\{2}-[0-9]\{2})-([0-9]\{4}-[0-9]\{2})\)' ]
 
-let s:dtscan_curloc_printdebug = 1
+let s:dtscan_curloc_printdebug = 0
 
 let s:dtscan_curloc_call = 1
 let s:dtscan_curloc_unfoldall_on_save = 0
@@ -228,13 +228,14 @@ function! s:LogError(message, ...)
 	let use_multiline = get(a:, 1, s:mldvp_use_multiline_logging_by_default)
 	"let callee = substitute(expand('<sfile>'), '.*\(\.\.\|\s\)', '', '')
 	let callee = expand('<sfile>')
-	let log_message = s:WriteToDebugFile(1, a:message, callee, use_multiline)
-	if (s:mldvp_error_echo == 1)
-		echo log_message
-	endif
-	if (s:mldvp_error_echoerr == 1)
-		echoerr log_message	
-	endif
+	"let log_message = s:WriteToDebugFile(1, a:message, callee, use_multiline)
+	"if (s:mldvp_error_echo == 1)
+	"	echo log_message
+	"endif
+	"if (s:mldvp_error_echoerr == 1)
+	"echoerr log_message	
+	"endif
+	echoerr a:message
 endfunction
 "	}}}
 
